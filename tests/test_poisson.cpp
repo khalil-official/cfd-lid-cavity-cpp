@@ -66,6 +66,38 @@ ErrorResult run_case(std::size_t n, lidcavity::PoissonMethod method) {
 
 int main() {
     using namespace lidcavity;
+    // A quadratic manufactured solution is exact under the five-point stencil.
+    // Rectangular grids exercise both starting parities and unequal spacings.
+    for (const auto shape : {std::pair<std::size_t, std::size_t>{8, 11}, {9, 10}}) {
+        const auto ny = shape.first;
+        const auto nx = shape.second;
+        const double dx = 2.0 / static_cast<double>(nx - 1);
+        const double dy = 1.0 / static_cast<double>(ny - 1);
+        Field2D rhs(ny, nx, 0.0);
+        for (std::size_t i = 0; i < ny; ++i) {
+            for (std::size_t j = 0; j < nx; ++j) {
+                const double x = static_cast<double>(j) * dx;
+                const double y = static_cast<double>(i) * dy;
+                rhs(i, j) = -2.0 * (y * (1.0 - y) + x * (2.0 - x));
+            }
+        }
+        for (const auto method : {PoissonMethod::rbgs, PoissonMethod::rbsor}) {
+            PoissonOptions options;
+            options.method = method;
+            options.absolute_tolerance = 1e-11;
+            options.relative_tolerance = 1e-11;
+            const auto result = solve_poisson_dirichlet(rhs, dx, dy, options);
+            require(result.converged, "rectangular Poisson case converged");
+            for (std::size_t i = 0; i < ny; ++i) {
+                for (std::size_t j = 0; j < nx; ++j) {
+                    const double x = static_cast<double>(j) * dx;
+                    const double y = static_cast<double>(i) * dy;
+                    require(std::abs(result.solution(i, j) - x * (2.0 - x) * y * (1.0 - y)) < 1e-9,
+                            "rectangular solution matches exact quadratic including boundaries");
+                }
+            }
+        }
+    }
     const std::vector<std::size_t> grids{17, 33, 65};
     std::vector<double> errors;
 

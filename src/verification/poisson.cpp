@@ -60,10 +60,8 @@ PoissonResult solve_poisson_dirichlet(
     for (std::size_t iteration = 1; iteration <= options.max_iterations; ++iteration) {
         for (int color = 0; color < 2; ++color) {
             for (std::size_t i = 1; i + 1 < rhs.ny(); ++i) {
-                for (std::size_t j = 1; j + 1 < rhs.nx(); ++j) {
-                    if (static_cast<int>((i + j) % 2U) != color) {
-                        continue;
-                    }
+                const std::size_t first_j = 1U + ((i + 1U + static_cast<std::size_t>(color)) % 2U);
+                for (std::size_t j = first_j; j + 1 < rhs.nx(); j += 2U) {
                     const double candidate =
                         ((solution(i + 1, j) + solution(i - 1, j)) * dx2
                          + (solution(i, j + 1) + solution(i, j - 1)) * dy2

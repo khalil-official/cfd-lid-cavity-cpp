@@ -280,11 +280,8 @@ static std::pair<Field, PoissonInfo> solve_pressure_poisson(
     for (int iteration = 1; iteration <= config.poisson_max_iterations; ++iteration) {
         for (int color = 0; color < 2; ++color) {
             for (int i = 0; i < cells; ++i) {
-                for (int j = 0; j < cells; ++j) {
-                    if (((i + j) & 1) != color) {
-                        continue;
-                    }
-
+                // Visit only this color, preserving the previous update order.
+                for (int j = (color + i) & 1; j < cells; j += 2) {
                     double neighbor_sum = 0.0;
                     int neighbor_count = 0;
                     if (i > 0) {

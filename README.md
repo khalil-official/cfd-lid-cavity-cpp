@@ -1,5 +1,32 @@
 # Lid-Driven Cavity Flow Solver in C++
 
+Development edition based on [Ahmed Kandil's original project](https://github.com/Kandil2001/LidCavity_CPP).
+Original authorship, Git history, and the MIT license are retained.
+
+## Local improvement and Windows build
+
+Red-black Poisson sweeps visit only the selected color with a stride of two,
+removing the skipped half of the inner-loop iterations while preserving update
+order. This is applied to both the production solver and the verification solver.
+CMake selects MSVC warning flags on Windows; passing GCC's `-Wextra` to MSVC
+previously prevented compilation.
+
+From a PowerShell session with CMake available:
+
+```powershell
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+cmake --build build --config Release --parallel
+ctest --test-dir build -C Release --output-on-failure
+```
+
+Verified on 2026-10-18 using MSVC 19.44 and CMake 3.31.6. All four CTest tests
+pass, including new rectangular manufactured Poisson cases with both grid
+parities and both RBGS/RBSOR. The canonical N=32, Re=100 regression retained
+2,086 iterations and identical CSV numerical metrics. One local Release run
+decreased from 2.80 s to 1.65 s; this single-run timing is indicative only.
+
+---
+
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Phase%202%20verified-brightgreen.svg" alt="Phase 2 verified">
   <img src="https://img.shields.io/badge/C%2B%2B-17-blue.svg" alt="C++17">

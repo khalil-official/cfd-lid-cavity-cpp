@@ -8,9 +8,13 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(LIDCAVITY_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
 
 function(lidcavity_apply_warnings target)
-    target_compile_options(${target} PRIVATE
-        -Wall -Wextra -Wpedantic -Wconversion -Wshadow
-    )
+    if(MSVC)
+        target_compile_options(${target} PRIVATE /W4 /permissive-)
+    else()
+        target_compile_options(${target} PRIVATE
+            -Wall -Wextra -Wpedantic -Wconversion -Wshadow
+        )
+    endif()
     if(LIDCAVITY_ENABLE_SANITIZERS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(${target} PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
         target_link_options(${target} PRIVATE -fsanitize=address,undefined)
